@@ -41,12 +41,12 @@ class CalendarTest extends TestCase
     {
         // Test case for the implemented algorithm
         $jd = Calendar::islamic_to_jd(1445, 12, 12);
-        $this->assertEquals(2460481.5, $jd);
+        $this->assertEquals(2460480.5, $jd);
     }
 
     public function testJdToIslamic()
     {
-        $date = Calendar::jd_to_islamic(2460481.5);
+        $date = Calendar::jd_to_islamic(2460480.5);
         $this->assertEquals([1445, 12, 12], $date);
     }
 

@@ -16,7 +16,8 @@ class Calendar {
     const JULIAN_EPOCH = 1721423.5;
     const HEBREW_EPOCH = 347995.5;
     const FRENCH_REVOLUTIONARY_EPOCH = 2375839.5;
-    const ISLAMIC_EPOCH = 1948439.5;
+    // Adjusted from 1948439.5 to provide a closer approximation to observational calendars like Umm al-Qura
+    const ISLAMIC_EPOCH = 1948438.5;
     const PERSIAN_EPOCH = 1948320.5;
     const MAYAN_COUNT_EPOCH = 584282.5;
 
