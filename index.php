@@ -83,8 +83,12 @@ if (isset($_POST['convert'])) {
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 2rem;
+            padding: 0 2rem;
             margin: 0;
+            background-image: url(./bg.jpg);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
         .container {
             background: #fff;
@@ -297,7 +301,7 @@ if (isset($_POST['convert'])) {
                     dateInput.val(date.format('iYYYY/iM/iD'));
                 });
 
-                dateInput.on('change', function() {
+                dateInput.on('keyup', function() {
                     const mDate = moment($(this).val(), 'iYYYY/iM/iD');
                     if(mDate.isValid()) {
                         setHiddenFields(mDate.iYear(), mDate.iMonth() + 1, mDate.iDate());
@@ -330,6 +334,7 @@ if (isset($_POST['convert'])) {
         conversionSelect.on('change', function() {
             setupDatepicker(this.value);
         });
+        conversionSelect.trigger('change');
     });
     </script>
 </body>
