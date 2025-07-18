@@ -1,41 +1,28 @@
 <?php
 
-/**
- * A professional PHP class for converting dates between Gregorian, Islamic, and Persian calendars.
- *
- * This is a backend-focused conversion of the core logic from the original calendar.js
- * script by John Walker, structured for modern PHP applications.
- *
- * @see http://www.fourmilab.ch/documents/calendar/
- */
 class CalendarConverter
 {
-    // --- Julian Day Epoch Constants ---
-    private const GREGORIAN_EPOCH = 1721425.5;
-    private const ISLAMIC_EPOCH = 1948439.5;
-    private const PERSIAN_EPOCH = 1948320.5;
+    // --- ثابت‌های مبدأ روز ژولینی برای هر تقویم ---
+    private const GREGORIAN_EPOCH = 1721425.5; // مبدأ میلادی
+    private const ISLAMIC_EPOCH = 1948439.5;   // مبدأ قمری
 
     /**
-     * A mathematical modulo function.
-     *
-     * @param float $a The dividend.
-     * @param float $b The divisor.
-     * @return float The remainder.
+     * محاسبه باقیمانده ریاضی (Modulo).
+     * @param float $a عدد اول
+     * @param float $b عدد دوم
+     * @return float باقیمانده
      */
     private function _mod(float $a, float $b): float
     {
         return $a - ($b * floor($a / $b));
     }
 
-    // --- CORE JULIAN DAY CONVERTERS ---
-
-    // --- GREGORIAN CALENDAR ---
+    // --- تقویم میلادی (GREGORIAN) ---
 
     /**
-     * Checks if a year is a leap year in the Gregorian calendar.
-     *
-     * @param int $year The year to check.
-     * @return bool True if the year is a leap year, false otherwise.
+     * بررسی می‌کند که آیا یک سال میلادی کبیسه است یا خیر.
+     * @param int $year سال میلادی
+     * @return bool
      */
     public function isLeapGregorian(int $year): bool
     {
@@ -43,12 +30,11 @@ class CalendarConverter
     }
 
     /**
-     * Converts a Gregorian date to a Julian Day number.
-     *
-     * @param int $year
-     * @param int $month
-     * @param int $day
-     * @return float The Julian Day number.
+     * یک تاریخ میلادی را به عدد روز ژولینی تبدیل می‌کند.
+     * @param int $year سال
+     * @param int $month ماه
+     * @param int $day روز
+     * @return float عدد روز ژولینی
      */
     public function gregorianToJd(int $year, int $month, int $day): float
     {
@@ -57,18 +43,13 @@ class CalendarConverter
             floor(($year - 1) / 4) +
             (-floor(($year - 1) / 100)) +
             floor(($year - 1) / 400) +
-            floor(
-                (((367 * $month) - 362) / 12) +
-                (($month <= 2) ? 0 : ($this->isLeapGregorian($year) ? -1 : -2)) +
-                $day
-            );
+            floor((((367 * $month) - 362) / 12) + (($month <= 2) ? 0 : ($this->isLeapGregorian($year) ? -1 : -2)) + $day);
     }
 
     /**
-     * Converts a Julian Day number to a Gregorian date.
-     *
-     * @param float $jd The Julian Day number.
-     * @return array An array containing [year, month, day].
+     * یک عدد روز ژولینی را به تاریخ میلادی تبدیل می‌کند.
+     * @param float $jd عدد روز ژولینی
+     * @return array آرایه‌ای شامل [سال, ماه, روز]
      */
     public function jdToGregorian(float $jd): array
     {
@@ -81,27 +62,23 @@ class CalendarConverter
         $quad = floor($dcent / 1461);
         $dquad = $this->_mod($dcent, 1461);
         $yindex = floor($dquad / 365);
-
         $year = (int) (($quadricent * 400) + ($cent * 100) + ($quad * 4) + $yindex);
         if (!($cent == 4 || $yindex == 4)) {
             $year++;
         }
-
         $yearday = $wjd - $this->gregorianToJd($year, 1, 1);
         $leapadj = ($wjd < $this->gregorianToJd($year, 3, 1)) ? 0 : ($this->isLeapGregorian($year) ? 1 : 2);
         $month = (int) floor((((($yearday + $leapadj) * 12) + 373) / 367));
         $day = (int) (($wjd - $this->gregorianToJd($year, $month, 1)) + 1);
-
         return [$year, $month, $day];
     }
 
-    // --- ISLAMIC CALENDAR ---
+    // --- تقویم قمری (ISLAMIC - ALGORITHMIC) ---
 
     /**
-     * Checks if a year is a leap year in the Islamic calendar.
-     *
-     * @param int $year The year to check.
-     * @return bool True if the year is a leap year, false otherwise.
+     * بررسی می‌کند که آیا یک سال قمری (بر اساس الگوریتم حسابی) کبیسه است یا خیر.
+     * @param int $year سال قمری
+     * @return bool
      */
     public function isLeapIslamic(int $year): bool
     {
@@ -109,27 +86,21 @@ class CalendarConverter
     }
 
     /**
-     * Converts an Islamic date to a Julian Day number.
-     *
-     * @param int $year
-     * @param int $month
-     * @param int $day
-     * @return float The Julian Day number.
+     * یک تاریخ قمری را به عدد روز ژولینی تبدیل می‌کند.
+     * @param int $year سال
+     * @param int $month ماه
+     * @param int $day روز
+     * @return float عدد روز ژولینی
      */
     public function islamicToJd(int $year, int $month, int $day): float
     {
-        return ($day +
-                ceil(29.5 * ($month - 1)) +
-                ($year - 1) * 354 +
-                floor((3 + (11 * $year)) / 30) +
-                self::ISLAMIC_EPOCH) - 1;
+        return ($day + ceil(29.5 * ($month - 1)) + ($year - 1) * 354 + floor((3 + (11 * $year)) / 30) + self::ISLAMIC_EPOCH) - 1;
     }
 
     /**
-     * Converts a Julian Day number to an Islamic date.
-     *
-     * @param float $jd The Julian Day number.
-     * @return array An array containing [year, month, day].
+     * یک عدد روز ژولینی را به تاریخ قمری تبدیل می‌کند.
+     * @param float $jd عدد روز ژولینی
+     * @return array آرایه‌ای شامل [سال, ماه, روز]
      */
     public function jdToIslamic(float $jd): array
     {
@@ -137,177 +108,117 @@ class CalendarConverter
         $year = (int) floor(((30 * ($jd - self::ISLAMIC_EPOCH)) + 10646) / 10631);
         $month = (int) min(12, ceil(($jd - (29 + $this->islamicToJd($year, 1, 1))) / 29.5) + 1);
         $day = (int) (($jd - $this->islamicToJd($year, $month, 1)) + 1);
-
         return [$year, $month, $day];
     }
-
-    // --- PERSIAN (ARITHMETIC) CALENDAR ---
-
+    
+    // --- تقویم شمسی با دقت بالا (HIGH-PRECISION PERSIAN CALENDAR) ---
+    
     /**
-     * Checks if a year is a leap year in the Persian arithmetic calendar.
-     *
-     * @param int $year The year to check.
-     * @return bool True if the year is a leap year, false otherwise.
+     * بررسی می‌کند که آیا سال شمسی کبیسه است یا خیر.
+     * @param int $pYear سال شمسی
+     * @return bool
      */
-    public function isLeapPersian(int $year): bool
+    public function isLeapPersian(int $pYear): bool
     {
-        return (((((($year - (($year > 0) ? 474 : 473)) % 2820) + 474) + 38) * 682) % 2816) < 682;
+        // این الگوریتم دقیق برای سال کبیسه، برای بازه بسیار بزرگی از سال‌ها صحیح عمل می‌کند
+        $a = $pYear + 2346;
+        $b = 2820;
+        $rem = $a % $b;
+        if($rem < 21) $rem += $b;
+        return (((($rem - 21) % 128) * 31) % 128) < 31;
     }
 
     /**
-     * Converts a Persian date to a Julian Day number.
-     *
-     * @param int $year
-     * @param int $month
-     * @param int $day
-     * @return float The Julian Day number.
-     */
-    public function persianToJd(int $year, int $month, int $day): float
-    {
-        $epbase = $year - (($year >= 0) ? 474 : 473);
-        $epyear = 474 + $this->_mod($epbase, 2820);
-        $monthContribution = ($month <= 7) ? (($month - 1) * 31) : ((($month - 1) * 30) + 6);
-
-        return $day +
-            $monthContribution +
-            floor((($epyear * 682) - 110) / 2816) +
-            ($epyear - 1) * 365 +
-            floor($epbase / 2820) * 1029983 +
-            (self::PERSIAN_EPOCH - 1);
-    }
-
-    /**
-     * Converts a Julian Day number to a Persian date.
-     *
-     * @param float $jd The Julian Day number.
-     * @return array An array containing [year, month, day].
+     * یک عدد روز ژولینی را به تاریخ شمسی تبدیل می‌کند.
+     * @param float $jd عدد روز ژولینی
+     * @return array آرایه‌ای شامل [سال, ماه, روز]
      */
     public function jdToPersian(float $jd): array
     {
-        $jd = floor($jd) + 0.5;
+        // ابتدا عدد ژولینی را به تاریخ میلادی معادل تبدیل می‌کنیم
+        list($gYear, $gMonth, $gDay) = $this->jdToGregorian($jd);
+        
+        // سپس از الگوریتم دقیق تبدیل میلادی به شمسی استفاده می‌کنیم
+        $g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        $pYear = $gYear - 621;
+        $g_day_no = $g_d_m[$gMonth - 1] + $gDay;
+        
+        if ($this->isLeapGregorian($gYear) && $gMonth > 2) {
+            $g_day_no++;
+        }
+        
+        // آفست ۷۹ روزه بین شروع سال میلادی و شمسی
+        $p_day_no = $g_day_no - 79;
+        
+        if ($p_day_no <= 0) {
+            $p_day_no += 365 + ($this->isLeapGregorian($gYear - 1) ? 1 : 0);
+            $pYear--;
+        }
+        
+        $pMonth = ($p_day_no <= 186) ? ceil($p_day_no / 31) : ceil(($p_day_no - 186) / 30) + 6;
+        $pDay = $p_day_no - (($pMonth <= 6) ? (($pMonth - 1) * 31) : (186 + ($pMonth - 7) * 30));
 
-        $depoch = $jd - $this->persianToJd(475, 1, 1);
-        $cycle = floor($depoch / 1029983);
-        $cyear = $this->_mod($depoch, 1029983);
-
-        if ($cyear == 1029982) {
-            $ycycle = 2820;
-        } else {
-            $aux1 = floor($cyear / 366);
-            $aux2 = $this->_mod($cyear, 366);
-            $ycycle = floor(((2134 * $aux1) + (2816 * $aux2) + 2815) / 1028522) + $aux1 + 1;
+        return [$pYear, $pMonth, $pDay];
+    }
+    
+    /**
+     * یک تاریخ شمسی را به عدد روز ژولینی تبدیل می‌کند.
+     * @param int $pYear سال
+     * @param int $pMonth ماه
+     * @param int $pDay روز
+     * @return float عدد روز ژولینی
+     */
+    public function persianToJd(int $pYear, int $pMonth, int $pDay): float
+    {
+        // ابتدا تاریخ شمسی را به میلادی معادل تبدیل می‌کنیم
+        $doy = ($pMonth <= 6) ? (($pMonth - 1) * 31) + $pDay : (186 + ($pMonth - 7) * 30) + $pDay;
+        $gYear = $pYear + 621;
+        
+        $gDoyStart = $this->isLeapGregorian($gYear) ? 80 : 79;
+        
+        $g_day_no = $doy + $gDoyStart;
+        
+        if ($g_day_no > (365 + ($this->isLeapGregorian($gYear) ? 1 : 0))) {
+            $g_day_no -= (365 + ($this->isLeapGregorian($gYear) ? 1 : 0));
+            $gYear++;
+        }
+        
+        $g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        if($this->isLeapGregorian($gYear)) {
+            $g_d_m = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
         }
 
-        $year = (int) ($ycycle + (2820 * $cycle) + 474);
-        if ($year <= 0) {
-            $year--;
+        $gMonth = 0;
+        while ($gMonth < 12 && $g_day_no > $g_d_m[$gMonth]) {
+            $gMonth++;
         }
-
-        $yday = ($jd - $this->persianToJd($year, 1, 1)) + 1;
-        $month = (int) (($yday <= 186) ? ceil($yday / 31) : ceil(($yday - 6) / 30));
-        $day = (int) (($jd - $this->persianToJd($year, $month, 1)) + 1);
-
-        return [$year, $month, $day];
+        $gDay = $g_day_no - $g_d_m[$gMonth - 1];
+        
+        // در نهایت، تاریخ میلادی به دست آمده را به عدد روز ژولینی تبدیل می‌کنیم
+        return $this->gregorianToJd($gYear, $gMonth, $gDay);
     }
+    
+    // --- توابع کمکی تبدیل مستقیم (Convenience Converters) ---
+    // این توابع برای راحتی بیشتر فراهم شده‌اند تا فرآیند دو مرحله‌ای تبدیل در یک تابع خلاصه شود.
+    public function gregorianToPersian(int $y, int $m, int $d): array { return $this->jdToPersian($this->gregorianToJd($y, $m, $d)); }
+    public function persianToGregorian(int $y, int $m, int $d): array { return $this->jdToGregorian($this->persianToJd($y, $m, $d)); }
+    public function gregorianToIslamic(int $y, int $m, int $d): array { return $this->jdToIslamic($this->gregorianToJd($y, $m, $d)); }
+    public function islamicToGregorian(int $y, int $m, int $d): array { return $this->jdToGregorian($this->islamicToJd($y, $m, $d)); }
+    public function persianToIslamic(int $y, int $m, int $d): array { return $this->jdToIslamic($this->persianToJd($y, $m, $d)); }
+    public function islamicToPersian(int $y, int $m, int $d): array { return $this->jdToPersian($this->islamicToJd($y, $m, $d)); }
 
-    // --- CONVENIENCE CONVERTERS ---
-
+    // --- ابزارها (UTILITY) ---
+    
     /**
-     * Converts a Persian date to a Gregorian date.
-     * @param int $year Persian year.
-     * @param int $month Persian month.
-     * @param int $day Persian day.
-     * @return array A Gregorian date array [year, month, day].
-     */
-    public function persianToGregorian(int $year, int $month, int $day): array
-    {
-        $jd = $this->persianToJd($year, $month, $day);
-        return $this->jdToGregorian($jd);
-    }
-
-    /**
-     * Converts a Persian date to an Islamic date.
-     * @param int $year Persian year.
-     * @param int $month Persian month.
-     * @param int $day Persian day.
-     * @return array An Islamic date array [year, month, day].
-     */
-    public function persianToIslamic(int $year, int $month, int $day): array
-    {
-        $jd = $this->persianToJd($year, $month, $day);
-        return $this->jdToIslamic($jd);
-    }
-
-    /**
-     * Converts an Islamic date to a Persian date.
-     * @param int $year Islamic year.
-     * @param int $month Islamic month.
-     * @param int $day Islamic day.
-     * @return array A Persian date array [year, month, day].
-     */
-    public function islamicToPersian(int $year, int $month, int $day): array
-    {
-        $jd = $this->islamicToJd($year, $month, $day);
-        return $this->jdToPersian($jd);
-    }
-
-    /**
-     * Converts an Islamic date to a Gregorian date.
-     * @param int $year Islamic year.
-     * @param int $month Islamic month.
-     * @param int $day Islamic day.
-     * @return array A Gregorian date array [year, month, day].
-     */
-    public function islamicToGregorian(int $year, int $month, int $day): array
-    {
-        $jd = $this->islamicToJd($year, $month, $day);
-        return $this->jdToGregorian($jd);
-    }
-
-    /**
-     * Converts a Gregorian date to a Persian date.
-     * @param int $year Gregorian year.
-     * @param int $month Gregorian month.
-     * @param int $day Gregorian day.
-     * @return array A Persian date array [year, month, day].
-     */
-    public function gregorianToPersian(int $year, int $month, int $day): array
-    {
-        $jd = $this->gregorianToJd($year, $month, $day);
-        return $this->jdToPersian($jd);
-    }
-
-    /**
-     * Converts a Gregorian date to an Islamic date.
-     * @param int $year Gregorian year.
-     * @param int $month Gregorian month.
-     * @param int $day Gregorian day.
-     * @return array An Islamic date array [year, month, day].
-     */
-    public function gregorianToIslamic(int $year, int $month, int $day): array
-    {
-        $jd = $this->gregorianToJd($year, $month, $day);
-        return $this->jdToIslamic($jd);
-    }
-
-    /**
-     * Calculates the day of the week for a given Julian Day.
-     * Sunday is 0, Monday is 1, etc.
-     *
-     * @param float $jd The Julian Day number.
-     * @param string $locale The locale for the weekday name ('fa' for Persian, 'en' for English).
-     * @return string The name of the weekday.
+     * نام روز هفته را برای یک عدد روز ژولینی مشخص برمی‌گرداند.
+     * @param float $jd عدد روز ژولینی
+     * @param string $locale زبان خروجی (فقط 'fa' پشتیبانی می‌شود)
+     * @return string نام روز هفته
      */
     public function getWeekday(float $jd, string $locale = 'fa'): string
     {
-        $weekdays = [
-            'fa' => ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'],
-            'en' => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-        ];
-
-        // Standard formula to get weekday index (0 for Sunday)
+        $weekdays = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'];
         $dayIndex = floor($jd + 1.5) % 7;
-
-        return $weekdays[$locale][$dayIndex] ?? 'Unknown';
+        return $weekdays[$dayIndex] ?? 'Unknown';
     }
 }

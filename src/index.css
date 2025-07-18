@@ -1,0 +1,35 @@
+/* --- Global Styles & Resets --- */
+:root {
+  --primary-color: #3b82f6;
+  --primary-hover: #60a5fa;
+  --text-dark: #1f2937;
+  --text-light: #6b7280;
+  --bg-main: #f3f4f6;
+  --bg-container: rgba(255, 255, 255, 0.95);
+  --border-color: #d1d5db;
+  --success-bg: #dcfce7;
+  --success-text: #166534;
+  --error-bg: #fee2e2;
+  --error-text: #991b1b;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body { 
+    font-family: 'Vazirmatn', sans-serif; 
+    background-color: var(--bg-main); 
+    color: var(--text-dark); 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh; 
+    padding: 1rem; 
+    margin: 0; 
+    background-image: url(/bg.jpg);
+    background-size: cover; 
+    background-position: center; 
+    background-repeat: no-repeat;
+    line-height: 1.5;
+}
